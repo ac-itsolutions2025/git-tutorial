@@ -1,2 +1,4 @@
 hello
 learning with Mosh
+Git training is exciting. 
+I am looking forward to learning new things with Git
