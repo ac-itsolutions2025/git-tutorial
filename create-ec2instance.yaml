@@ -1,17 +1,18 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: >
-  CloudFormation template to create an EC2 instance with configurable VPC, Subnet, Security Group, Instance Type, AMI, Region, and User Data to install and start Apache HTTPD.
+  CloudFormation template to create 2 EC2 instances with configurable VPC, Subnet, Security Group, Instance Type, AMI, Key Pair, and User Data to install and start Apache HTTPD.
+  Each instance is tagged with a unique name.
 
 Parameters:
   VpcId:
     Type: AWS::EC2::VPC::Id
-    Description: Choose the VPC where the instance will be deployed.
+    Description: Choose the VPC where the instances will be deployed.
   SubnetId:
     Type: AWS::EC2::Subnet::Id
-    Description: Choose the Subnet for the EC2 instance.
+    Description: Choose the Subnet for the EC2 instances.
   SecurityGroupIds:
     Type: List<AWS::EC2::SecurityGroup::Id>
-    Description: Choose one or more Security Groups for the EC2 instance.
+    Description: Choose one or more Security Groups for the EC2 instances.
   InstanceType:
     Type: String
     Default: t3.micro
@@ -25,20 +26,24 @@ Parameters:
     Description: Choose the EC2 instance type.
   AmiId:
     Type: AWS::EC2::Image::Id
-    Description: Enter the AMI ID to use for this instance.
+    Description: Enter the AMI ID to use for these instances.
+  KeyName:
+    Type: AWS::EC2::KeyPair::KeyName
+    Description: Select the EC2 Key Pair to allow SSH access to the instances.
   Region:
     Type: String
     Description: Specify the region for the deployment (for reference only, not used in resources).
     Default: us-east-1
 
 Resources:
-  EC2Instance:
+  EC2Instance1:
     Type: AWS::EC2::Instance
     Properties:
       InstanceType: !Ref InstanceType
       ImageId: !Ref AmiId
       SubnetId: !Ref SubnetId
       SecurityGroupIds: !Ref SecurityGroupIds
+      KeyName: !Ref KeyName
       UserData:
         Fn::Base64: !Sub |
           #!/bin/bash
@@ -55,13 +60,46 @@ Resources:
         - Key: Purpose
           Value: Development
 
+  EC2Instance2:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref InstanceType
+      ImageId: !Ref AmiId
+      SubnetId: !Ref SubnetId
+      SecurityGroupIds: !Ref SecurityGroupIds
+      KeyName: !Ref KeyName
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          yum update -y
+          yum install -y httpd
+          systemctl enable httpd
+          systemctl start httpd
+          echo "<h1>ACIT Webserver 2 - Apache is running</h1>" > /var/www/html/index.html
+      Tags:
+        - Key: Name
+          Value: acit-webserver-2
+        - Key: Env
+          Value: DEV
+        - Key: Purpose
+          Value: Development
+
 Outputs:
-  InstanceId:
-    Description: The Instance ID of the EC2 instance.
-    Value: !Ref EC2Instance
-  PublicIp:
-    Description: The public IP address of the EC2 instance.
-    Value: !GetAtt EC2Instance.PublicIp
-  PrivateIp:
-    Description: The private IP address of the EC2 instance.
-    Value: !GetAtt EC2Instance.PrivateIp
+  InstanceId1:
+    Description: The Instance ID of the first EC2 instance.
+    Value: !Ref EC2Instance1
+  PublicIp1:
+    Description: The public IP address of the first EC2 instance.
+    Value: !GetAtt EC2Instance1.PublicIp
+  PrivateIp1:
+    Description: The private IP address of the first EC2 instance.
+    Value: !GetAtt EC2Instance1.PrivateIp
+  InstanceId2:
+    Description: The Instance ID of the second EC2 instance.
+    Value: !Ref EC2Instance2
+  PublicIp2:
+    Description: The public IP address of the second EC2 instance.
+    Value: !GetAtt EC2Instance2.PublicIp
+  PrivateIp2:
+    Description: The private IP address of the second EC2 instance.
+    Value: !GetAtt EC2Instance2.PrivateIp
