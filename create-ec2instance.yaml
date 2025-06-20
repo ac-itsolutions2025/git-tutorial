@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 Description: >
   CloudFormation template to create 2 EC2 instances with configurable VPC, Subnet, Security Group, Instance Type, AMI, Key Pair, and User Data to install and start Apache HTTPD.
   Each instance is tagged with a unique name.
@@ -15,7 +15,7 @@ Parameters:
     Description: Choose one or more Security Groups for the EC2 instances.
   InstanceType:
     Type: String
-    Default: t3.micro
+    Default: t2.micro
     AllowedValues:
       - t2.micro
       - t2.small
@@ -33,7 +33,7 @@ Parameters:
   Region:
     Type: String
     Description: Specify the region for the deployment (for reference only, not used in resources).
-    Default: us-east-1
+    Default: us-east-2
 
 Resources:
   EC2Instance1:
