@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: A template to create a VPC with structured subnets and associated infrastructure.
+Description: A template to create a VPC with structured ACIT subnet routing.
 
 Parameters:
   Environment:
@@ -61,8 +61,8 @@ Resources:
   AttachGateway:
     Type: AWS::EC2::VPCGatewayAttachment
     Properties:
-      VpcId: !Ref VPC
       InternetGatewayId: !Ref InternetGateway
+      VpcId: !Ref VPC
 
   ACITWebSubnet1:
     Type: AWS::EC2::Subnet
@@ -136,86 +136,69 @@ Resources:
       AllocationId: !GetAtt NATIP2.AllocationId
       SubnetId: !Ref ACITWebSubnet2
 
-  PublicRouteTable:
+  ACITWebRouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
       VpcId: !Ref VPC
       Tags:
         - Key: Name
-          Value: !Sub ${Environment}-PublicRouteTable
+          Value: ACIT_Web_RouteTable
         - Key: Environment
           Value: !Ref Environment
 
-  PublicRoute:
+  ACITWebDefaultRoute:
     Type: AWS::EC2::Route
     DependsOn: AttachGateway
     Properties:
-      RouteTableId: !Ref PublicRouteTable
+      RouteTableId: !Ref ACITWebRouteTable
       DestinationCidrBlock: 0.0.0.0/0
       GatewayId: !Ref InternetGateway
 
-  PublicSubnet1RouteTableAssociation:
+  ACITWebSubnet1Association:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       SubnetId: !Ref ACITWebSubnet1
-      RouteTableId: !Ref PublicRouteTable
+      RouteTableId: !Ref ACITWebRouteTable
 
-  PublicSubnet2RouteTableAssociation:
+  ACITWebSubnet2Association:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       SubnetId: !Ref ACITWebSubnet2
-      RouteTableId: !Ref PublicRouteTable
+      RouteTableId: !Ref ACITWebRouteTable
 
-  PrivateRouteTable1:
+  ACITAppRouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
       VpcId: !Ref VPC
       Tags:
         - Key: Name
-          Value: !Sub ${Environment}-PrivateRouteTable1
+          Value: ACIT_APP_RouteTable
         - Key: Environment
           Value: !Ref Environment
 
-  PrivateRoute1:
+  ACITAppDefaultRoute:
     Type: AWS::EC2::Route
     Properties:
-      RouteTableId: !Ref PrivateRouteTable1
+      RouteTableId: !Ref ACITAppRouteTable
       DestinationCidrBlock: 0.0.0.0/0
       NatGatewayId: !Ref NATGateway1
 
-  PrivateSubnet1RouteTableAssociation:
+  ACITAppSubnet1Association:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       SubnetId: !Ref ACITAppSubnet1
-      RouteTableId: !Ref PrivateRouteTable1
+      RouteTableId: !Ref ACITAppRouteTable
 
-  PrivateRouteTable2:
-    Type: AWS::EC2::RouteTable
-    Properties:
-      VpcId: !Ref VPC
-      Tags:
-        - Key: Name
-          Value: !Sub ${Environment}-PrivateRouteTable2
-        - Key: Environment
-          Value: !Ref Environment
-
-  PrivateRoute2:
-    Type: AWS::EC2::Route
-    Properties:
-      RouteTableId: !Ref PrivateRouteTable2
-      DestinationCidrBlock: 0.0.0.0/0
-      NatGatewayId: !Ref NATGateway2
-
-  PrivateSubnet2RouteTableAssociation:
+  ACITAppSubnet2Association:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       SubnetId: !Ref ACITAppSubnet2
-      RouteTableId: !Ref PrivateRouteTable2
+      RouteTableId: !Ref ACITAppRouteTable
 
   EC2SecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: Allow SSH access from restricted IP
+      GroupDescription: Allow SSH from restricted IP
       VpcId: !Ref VPC
       SecurityGroupIngress:
         - IpProtocol: tcp
@@ -262,4 +245,19 @@ Outputs:
     Value: !Ref ACITWebSubnet1
   ACIT_Web_Subnet2:
     Description: ACIT_Web_Subnet2
-    Value: !Ref
+    Value: !Ref ACITWebSubnet2
+  ACIT_APP_Subnet1:
+    Description: ACIT_APP_Subnet1
+    Value: !Ref ACITAppSubnet1
+  ACIT_APP_Subnet2:
+    Description: ACIT_APP_Subnet2
+    Value: !Ref ACITAppSubnet2
+  EC2Instance:
+    Description: The public EC2 instance
+    Value: !Ref EC2Instance
+  PublicIP:
+    Description: The public IP of the EC2 instance
+    Value: !GetAtt EC2Instance.PublicIp
+  VPCId:
+    Description: The ID of the created VPC
+    Value: !Ref VPC
