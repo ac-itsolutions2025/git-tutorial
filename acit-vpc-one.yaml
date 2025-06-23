@@ -45,7 +45,7 @@ Resources:
       CidrBlock: !Ref VpcCIDR
       Tags:
         - Key: Name
-          Value: !Sub ${Environment}-VPC
+          Value: !Sub ${Environment}
         - Key: Environment
           Value: !Ref Environment
 
