@@ -5,7 +5,7 @@ Parameters:
   Environment:
     Type: String
     Description: Environment name
-    Default: dev
+    Default: acit-vpc-two
   VpcCIDR:
     Type: String
     Description: VPC CIDR block
@@ -72,7 +72,7 @@ Resources:
       AvailabilityZone: !Select [0, !GetAZs ""]
       Tags:
         - Key: Name
-          Value: ACIT_Web_Subnet1
+          Value: ACIT_Web_Subnet2a
         - Key: Environment
           Value: !Ref Environment
 
@@ -84,7 +84,7 @@ Resources:
       AvailabilityZone: !Select [1, !GetAZs ""]
       Tags:
         - Key: Name
-          Value: ACIT_Web_Subnet2
+          Value: ACIT_Web_Subnet2b
         - Key: Environment
           Value: !Ref Environment
 
@@ -96,7 +96,7 @@ Resources:
       AvailabilityZone: !Select [0, !GetAZs ""]
       Tags:
         - Key: Name
-          Value: ACITAPPSubnet1
+          Value: ACIT_APP_Subnet2a
         - Key: Environment
           Value: !Ref Environment
 
@@ -108,7 +108,7 @@ Resources:
       AvailabilityZone: !Select [1, !GetAZs ""]
       Tags:
         - Key: Name
-          Value: ACITAPPSubnet2
+          Value: ACIT_APP_Subnet2b
         - Key: Environment
           Value: !Ref Environment
 
@@ -241,16 +241,16 @@ Outputs:
     Description: The created VPC
     Value: !Ref VPC
   ACITWebSubnet1:
-    Description: ACIT_Web_Subnet1
+    Description: ACIT_Web_Subnet2a
     Value: !Ref ACITWebSubnet1
   ACITWebSubnet2:
-    Description: ACIT_Web_Subnet2
+    Description: ACIT_Web_Subnet2b
     Value: !Ref ACITWebSubnet2
   ACITAPPSubnet1:
-    Description: ACIT_APP_Subnet1
+    Description: ACIT_APP_Subnet2a
     Value: !Ref ACITAppSubnet1
   ACITAPPSubnet2:
-    Description: ACIT_APP_Subnet2
+    Description: ACIT_APP_Subnet2b
     Value: !Ref ACITAppSubnet2
   EC2Instance:
     Description: The public EC2 instance
