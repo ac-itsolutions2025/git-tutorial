@@ -10,19 +10,19 @@ Parameters:
     Type: String
     Description: VPC CIDR block
     Default: 10.226.232.0/23
-  ACIT_Web_Subnet1CIDR:
+  ACITWebSubnet1CIDR:
     Type: String
     Description: CIDR block for ACIT_Web_Subnet1
     Default: 10.226.232.0/25
-  ACIT_Web_Subnet2CIDR:
+  ACITWebSubnet2CIDR:
     Type: String
     Description: CIDR block for ACIT_Web_Subnet2
     Default: 10.226.232.128/25
-  ACIT_APP_Subnet1CIDR:
+  ACITAPPSubnet1CIDR:
     Type: String
     Description: CIDR block for ACIT_APP_Subnet1
     Default: 10.226.233.0/25
-  ACIT_APP_Subnet2CIDR:
+  ACITAPPSubnet2CIDR:
     Type: String
     Description: CIDR block for ACIT_APP_Subnet2
     Default: 10.226.233.128/25
@@ -68,7 +68,7 @@ Resources:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref VPC
-      CidrBlock: !Ref ACIT_Web_Subnet1CIDR
+      CidrBlock: !Ref ACITWebSubnet1CIDR
       AvailabilityZone: !Select [0, !GetAZs ""]
       Tags:
         - Key: Name
@@ -80,7 +80,7 @@ Resources:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref VPC
-      CidrBlock: !Ref ACIT_Web_Subnet2CIDR
+      CidrBlock: !Ref ACITWebSubnet2CIDR
       AvailabilityZone: !Select [1, !GetAZs ""]
       Tags:
         - Key: Name
@@ -92,11 +92,11 @@ Resources:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref VPC
-      CidrBlock: !Ref ACIT_APP_Subnet1CIDR
+      CidrBlock: !Ref ACITAPPSubnet1CIDR
       AvailabilityZone: !Select [0, !GetAZs ""]
       Tags:
         - Key: Name
-          Value: ACIT_APP_Subnet1
+          Value: ACITAPPSubnet1
         - Key: Environment
           Value: !Ref Environment
 
@@ -104,11 +104,11 @@ Resources:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref VPC
-      CidrBlock: !Ref ACIT_APP_Subnet2CIDR
+      CidrBlock: !Ref ACITAPPSubnet2CIDR
       AvailabilityZone: !Select [1, !GetAZs ""]
       Tags:
         - Key: Name
-          Value: ACIT_APP_Subnet2
+          Value: ACITAPPSubnet2
         - Key: Environment
           Value: !Ref Environment
 
@@ -240,16 +240,16 @@ Outputs:
   VPC:
     Description: The created VPC
     Value: !Ref VPC
-  ACIT_Web_Subnet1:
+  ACITWebSubnet1:
     Description: ACIT_Web_Subnet1
     Value: !Ref ACITWebSubnet1
-  ACIT_Web_Subnet2:
+  ACITWebSubnet2:
     Description: ACIT_Web_Subnet2
     Value: !Ref ACITWebSubnet2
-  ACIT_APP_Subnet1:
+  ACITAPPSubnet1:
     Description: ACIT_APP_Subnet1
     Value: !Ref ACITAppSubnet1
-  ACIT_APP_Subnet2:
+  ACITAPPSubnet2:
     Description: ACIT_APP_Subnet2
     Value: !Ref ACITAppSubnet2
   EC2Instance:
