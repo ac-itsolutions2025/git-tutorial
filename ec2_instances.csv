@@ -1,0 +1,7 @@
+Region,Instance ID,Name,State,Public IP,Private IP
+eu-west-1,i-06550bcfedeca6192,App-server-01,running,18.201.54.159,172.31.18.238
+eu-west-1,i-078bf3925ce365f37,App-server-02,running,3.252.74.100,172.31.17.125
+eu-west-1,i-012eabec76d008629,App-server-03,running,3.252.139.128,172.31.28.82
+us-east-2,i-07895b4636f88c7fa,server-01,running,18.222.22.158,172.31.14.224
+us-east-2,i-06696d11973dad9e7,server-02,running,18.118.195.20,172.31.4.114
+us-east-2,i-06cf6732f314acbbd,server-03,running,3.147.238.107,172.31.12.140
