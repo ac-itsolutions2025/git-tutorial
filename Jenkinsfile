@@ -39,9 +39,17 @@ pipeline {
       steps {
         echo '🔍 Validating prerequisites and AWS connectivity'
         script {
+          // Debug: Show workspace contents
+          sh '''
+            echo "📁 Workspace contents:"
+            ls -la
+            echo ""
+            echo "🔍 Looking for template file: $TEMPLATE_FILE"
+          '''
+          
           // Check if template file exists
           if (!fileExists(env.TEMPLATE_FILE)) {
-            error "❌ CloudFormation template file '${env.TEMPLATE_FILE}' not found!"
+            error "❌ CloudFormation template file '${env.TEMPLATE_FILE}' not found in workspace!"
           }
           
           // Test AWS connectivity
@@ -84,7 +92,32 @@ pipeline {
             echo '🔍 Linting CloudFormation template'
             sh '''
               . .venv/bin/activate
-              .venv/bin/cfn-lint --template "$TEMPLATE_FILE" --format parseable
+              
+              # Debug: Show current directory and files
+              echo "Current directory: $(pwd)"
+              echo "Template file: $TEMPLATE_FILE"
+              echo "Files in current directory:"
+              ls -la
+              
+              # Find the template file
+              TEMPLATE_PATH=""
+              if [ -f "$TEMPLATE_FILE" ]; then
+                TEMPLATE_PATH="$TEMPLATE_FILE"
+              elif [ -f "./$TEMPLATE_FILE" ]; then
+                TEMPLATE_PATH="./$TEMPLATE_FILE"
+              else
+                echo "❌ Template file '$TEMPLATE_FILE' not found!"
+                echo "Available files:"
+                find . -name "*.yaml" -o -name "*.yml" -o -name "*.json" | head -10
+                exit 1
+              fi
+              
+              echo "✅ Found template at: $TEMPLATE_PATH"
+              
+              # Run cfn-lint with absolute path to avoid glob issues
+              FULL_PATH="$(pwd)/$TEMPLATE_PATH"
+              echo "Running cfn-lint on: $FULL_PATH"
+              .venv/bin/cfn-lint "$FULL_PATH" --format parseable
             '''
           }
         }
