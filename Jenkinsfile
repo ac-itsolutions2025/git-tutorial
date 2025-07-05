@@ -2,7 +2,7 @@ pipeline {
   agent any
 
   environment {
-    STACK_NAME     = 'acit-vpc-stack'
+    STACK_NAME     = 'acit-vpc-two'
     TEMPLATE_FILE  = 'acit-vpc-one.yaml'   // Your file name might differ
     REGION         = 'us-east-1'       // Update if deploying elsewhere
 
