@@ -7,7 +7,7 @@ pipeline {
     REGION         = 'us-east-1'
     ENV_NAME       = 'acit-vpc-two'
     VPC_CIDR       = '10.226.232.0/23'
-    KEY_NAME       = 'your-keypair-name' // 🔑 Replace with your actual key pair name
+    KEY_NAME       = 'ec2-user' // 🔑 Replace with your EC2 key pair
     RESTRICTED_IP  = '100.16.251.45/32'
 
     // Subnet CIDRs
@@ -24,9 +24,16 @@ pipeline {
 
   stages {
 
+    stage('Checkout from Git') {
+      steps {
+        echo '📦 Pulling latest code from Git'
+        checkout scm
+      }
+    }
+
     stage('Setup Virtual Environment') {
       steps {
-        echo '⚙️ Creating Python virtual environment and installing cfn-lint'
+        echo '⚙️ Creating Python virtual environment for cfn-lint'
         sh '''
           python3 -m venv .venv
           . .venv/bin/activate && pip install --upgrade pip && pip install cfn-lint
@@ -36,7 +43,7 @@ pipeline {
 
     stage('Lint CloudFormation Template') {
       steps {
-        echo '🔍 Running CloudFormation linter'
+        echo '🔍 Linting CloudFormation template'
         sh '''
           . .venv/bin/activate
           .venv/bin/cfn-lint ./acit-vpc.yaml
@@ -46,7 +53,7 @@ pipeline {
 
     stage('Deploy CloudFormation Stack') {
       steps {
-        echo '🚀 Deploying CloudFormation stack for ACIT VPC'
+        echo '🚀 Deploying ACIT VPC CloudFormation stack...'
         sh """
           aws cloudformation deploy \\
             --stack-name \$STACK_NAME \\
@@ -68,7 +75,7 @@ pipeline {
 
     stage('Fetch EC2 Public IP') {
       steps {
-        echo '📡 Retrieving EC2 Public IP from CloudFormation outputs'
+        echo '📡 Retrieving EC2 instance public IP...'
         sh '''
           IP=$(aws cloudformation describe-stacks \
             --region "$REGION" \
@@ -78,7 +85,7 @@ pipeline {
 
           echo ""
           echo "🖥️  EC2 Public IP: $IP"
-          echo "🔐 SSH Access: ssh -i ~/.ssh/$KEY_NAME.pem ec2-user@$IP"
+          echo "🔐 Connect using: ssh -i ~/.ssh/$KEY_NAME.pem ec2-user@$IP"
         '''
       }
     }
@@ -86,14 +93,14 @@ pipeline {
 
   post {
     always {
-      echo '🧹 Cleaning up virtual environment...'
+      echo '🧹 Cleaning up virtual environment'
       sh 'rm -rf .venv'
     }
     success {
       echo '✅ Stack deployed successfully!'
     }
     failure {
-      echo '❌ Something went wrong. Please review the error log above.'
+      echo '❌ Deployment failed. See error output above.'
     }
   }
 }
