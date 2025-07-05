@@ -7,10 +7,10 @@ pipeline {
     REGION         = 'us-east-1'
     ENV_NAME       = 'acit-vpc-two'
     VPC_CIDR       = '10.226.232.0/23'
-    KEY_NAME       = 'ec2-user'       // <-- Replace with your EC2 key pair
+    KEY_NAME       = 'your-keypair-name'       // Replace with your EC2 key pair name
     RESTRICTED_IP  = '100.16.251.45/32'
 
-    # Subnet CIDRs
+    // Subnet CIDRs
     WEB1_CIDR = '10.226.232.0/25'
     WEB2_CIDR = '10.226.232.128/25'
     APP1_CIDR = '10.226.233.0/25'
@@ -40,14 +40,14 @@ pipeline {
             --template-file $TEMPLATE_FILE \
             --region $REGION \
             --capabilities CAPABILITY_NAMED_IAM \
-            --parameter-overrides \
-              Environment=$ENV_NAME \
-              VpcCIDR=$VPC_CIDR \
-              ACITWebSubnet1CIDR=$WEB1_CIDR \
-              ACITWebSubnet2CIDR=$WEB2_CIDR \
-              ACITAPPSubnet1CIDR=$APP1_CIDR \
-              ACITAPPSubnet2CIDR=$APP2_CIDR \
-              KeyName=$KEY_NAME \
+            --parameter-overrides \\
+              Environment=$ENV_NAME \\
+              VpcCIDR=$VPC_CIDR \\
+              ACITWebSubnet1CIDR=$WEB1_CIDR \\
+              ACITWebSubnet2CIDR=$WEB2_CIDR \\
+              ACITAPPSubnet1CIDR=$APP1_CIDR \\
+              ACITAPPSubnet2CIDR=$APP2_CIDR \\
+              KeyName=$KEY_NAME \\
               RestrictedIP=$RESTRICTED_IP
         """
       }
@@ -55,16 +55,17 @@ pipeline {
 
     stage('Fetch Public IP') {
       steps {
-        echo '📡 Retrieving EC2 public IP...'
+        echo '📡 Retrieving EC2 public IP from stack output...'
         sh """
-          IP=$(aws cloudformation describe-stacks \
-            --region $REGION \
-            --stack-name $STACK_NAME \
-            --query "Stacks[0].Outputs[?OutputKey=='PublicIP'].OutputValue" \
+          IP=\$(aws cloudformation describe-stacks \\
+            --region $REGION \\
+            --stack-name $STACK_NAME \\
+            --query "Stacks[0].Outputs[?OutputKey=='PublicIP'].OutputValue" \\
             --output text)
 
+          echo ""
           echo "🖥️  EC2 Public IP: \$IP"
-          echo "🔐 Connect via: ssh -i ~/.ssh/$KEY_NAME.pem ec2-user@\$IP"
+          echo "🔐 Connect using: ssh -i ~/.ssh/$KEY_NAME.pem ec2-user@\$IP"
         """
       }
     }
@@ -75,7 +76,7 @@ pipeline {
       echo '✅ ACIT VPC Stack deployed successfully!'
     }
     failure {
-      echo '❌ Deployment failed. Check logs and parameters.'
+      echo '❌ Deployment failed. Please check the logs above.'
     }
   }
 }
