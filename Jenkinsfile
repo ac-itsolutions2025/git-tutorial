@@ -48,7 +48,7 @@ pipeline {
         echo '🔍 Linting CloudFormation template'
         sh '''
           . .venv/bin/activate
-          .venv/bin/cfn-lint ./acit-vpc.yaml
+          .venv/bin/cfn-lint --template "$TEMPLATE_FILE"
         '''
       }
     }
