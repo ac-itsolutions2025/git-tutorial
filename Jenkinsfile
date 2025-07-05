@@ -36,7 +36,9 @@ pipeline {
         echo '⚙️ Creating Python virtual environment for cfn-lint'
         sh '''
           python3 -m venv .venv
-          . .venv/bin/activate && pip install --upgrade pip && pip install cfn-lint
+          . .venv/bin/activate
+          pip install --upgrade pip
+          pip install cfn-lint
         '''
       }
     }
@@ -46,7 +48,7 @@ pipeline {
         echo '🔍 Linting CloudFormation template'
         sh '''
           . .venv/bin/activate
-          .venv/bin/cfn-lint ./acit-vpc.yaml
+          .venv/bin/cfn-lint "$TEMPLATE_FILE"
         '''
       }
     }
@@ -54,22 +56,22 @@ pipeline {
     stage('Deploy CloudFormation Stack') {
       steps {
         echo '🚀 Deploying ACIT VPC CloudFormation stack...'
-        sh """
-          aws cloudformation deploy \\
-            --stack-name \$STACK_NAME \\
-            --template-file \$TEMPLATE_FILE \\
-            --region \$REGION \\
-            --capabilities CAPABILITY_NAMED_IAM \\
-            --parameter-overrides \\
-              Environment=\$ENV_NAME \\
-              VpcCIDR=\$VPC_CIDR \\
-              ACITWebSubnet1CIDR=\$WEB1_CIDR \\
-              ACITWebSubnet2CIDR=\$WEB2_CIDR \\
-              ACITAPPSubnet1CIDR=\$APP1_CIDR \\
-              ACITAPPSubnet2CIDR=\$APP2_CIDR \\
-              KeyName=\$KEY_NAME \\
-              RestrictedIP=\$RESTRICTED_IP
-        """
+        sh '''
+          aws cloudformation deploy \
+            --stack-name "$STACK_NAME" \
+            --template-file "$TEMPLATE_FILE" \
+            --region "$REGION" \
+            --capabilities CAPABILITY_NAMED_IAM \
+            --parameter-overrides \
+              Environment="$ENV_NAME" \
+              VpcCIDR="$VPC_CIDR" \
+              ACITWebSubnet1CIDR="$WEB1_CIDR" \
+              ACITWebSubnet2CIDR="$WEB2_CIDR" \
+              ACITAPPSubnet1CIDR="$APP1_CIDR" \
+              ACITAPPSubnet2CIDR="$APP2_CIDR" \
+              KeyName="$KEY_NAME" \
+              RestrictedIP="$RESTRICTED_IP"
+        '''
       }
     }
 
@@ -83,7 +85,6 @@ pipeline {
             --query "Stacks[0].Outputs[?OutputKey=='PublicIP'].OutputValue" \
             --output text)
 
-          echo ""
           echo "🖥️  EC2 Public IP: $IP"
           echo "🔐 Connect using: ssh -i ~/.ssh/$KEY_NAME.pem ec2-user@$IP"
         '''
