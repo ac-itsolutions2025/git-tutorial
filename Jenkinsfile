@@ -7,7 +7,7 @@ pipeline {
     REGION         = 'us-east-1'
     ENV_NAME       = 'acit-vpc-two'
     VPC_CIDR       = '10.226.232.0/23'
-    KEY_NAME       = 'ec2-user' // 🔑 Replace this with your actual EC2 key pair name
+    KEY_NAME       = 'your-keypair-name' // 🔑 Replace with your actual key pair name
     RESTRICTED_IP  = '100.16.251.45/32'
 
     // Subnet CIDRs
@@ -29,9 +29,7 @@ pipeline {
         echo '⚙️ Creating Python virtual environment and installing cfn-lint'
         sh '''
           python3 -m venv .venv
-          . .venv/bin/activate
-          pip install --upgrade pip
-          pip install cfn-lint
+          . .venv/bin/activate && pip install --upgrade pip && pip install cfn-lint
         '''
       }
     }
@@ -41,7 +39,7 @@ pipeline {
         echo '🔍 Running CloudFormation linter'
         sh '''
           . .venv/bin/activate
-          cfn-lint "$TEMPLATE_FILE"
+          .venv/bin/cfn-lint ./acit-vpc.yaml
         '''
       }
     }
@@ -49,22 +47,22 @@ pipeline {
     stage('Deploy CloudFormation Stack') {
       steps {
         echo '🚀 Deploying CloudFormation stack for ACIT VPC'
-        sh '''
-          aws cloudformation deploy \
-            --stack-name "$STACK_NAME" \
-            --template-file "$TEMPLATE_FILE" \
-            --region "$REGION" \
-            --capabilities CAPABILITY_NAMED_IAM \
-            --parameter-overrides \
-              Environment="$ENV_NAME" \
-              VpcCIDR="$VPC_CIDR" \
-              ACITWebSubnet1CIDR="$WEB1_CIDR" \
-              ACITWebSubnet2CIDR="$WEB2_CIDR" \
-              ACITAPPSubnet1CIDR="$APP1_CIDR" \
-              ACITAPPSubnet2CIDR="$APP2_CIDR" \
-              KeyName="$KEY_NAME" \
-              RestrictedIP="$RESTRICTED_IP"
-        '''
+        sh """
+          aws cloudformation deploy \\
+            --stack-name \$STACK_NAME \\
+            --template-file \$TEMPLATE_FILE \\
+            --region \$REGION \\
+            --capabilities CAPABILITY_NAMED_IAM \\
+            --parameter-overrides \\
+              Environment=\$ENV_NAME \\
+              VpcCIDR=\$VPC_CIDR \\
+              ACITWebSubnet1CIDR=\$WEB1_CIDR \\
+              ACITWebSubnet2CIDR=\$WEB2_CIDR \\
+              ACITAPPSubnet1CIDR=\$APP1_CIDR \\
+              ACITAPPSubnet2CIDR=\$APP2_CIDR \\
+              KeyName=\$KEY_NAME \\
+              RestrictedIP=\$RESTRICTED_IP
+        """
       }
     }
 
@@ -78,6 +76,7 @@ pipeline {
             --query "Stacks[0].Outputs[?OutputKey=='PublicIP'].OutputValue" \
             --output text)
 
+          echo ""
           echo "🖥️  EC2 Public IP: $IP"
           echo "🔐 SSH Access: ssh -i ~/.ssh/$KEY_NAME.pem ec2-user@$IP"
         '''
