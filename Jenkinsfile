@@ -7,7 +7,7 @@ pipeline {
     REGION         = 'us-east-1'
     ENV_NAME       = 'acit-vpc-two'
     VPC_CIDR       = '10.226.232.0/23'
-    KEY_NAME       = 'ec2-user' // 🔑 Replace with your EC2 key pair
+    KEY_NAME       = 'ec2-user' // 🔑 Replace with your actual EC2 key pair
     RESTRICTED_IP  = '100.16.251.45/32'
 
     // Subnet CIDRs
@@ -33,12 +33,12 @@ pipeline {
 
     stage('Setup Virtual Environment') {
       steps {
-        echo '⚙️ Creating Python virtual environment for cfn-lint'
+        echo '⚙️ Creating Python virtual environment and installing cfn-lint'
         sh '''
           python3 -m venv .venv
           . .venv/bin/activate
-          pip install --upgrade pip
-          pip install cfn-lint
+          .venv/bin/pip install --upgrade pip
+          .venv/bin/pip install cfn-lint
         '''
       }
     }
@@ -48,7 +48,7 @@ pipeline {
         echo '🔍 Linting CloudFormation template'
         sh '''
           . .venv/bin/activate
-          .venv/bin/cfn-lint "$TEMPLATE_FILE"
+          .venv/bin/cfn-lint ./acit-vpc.yaml
         '''
       }
     }
@@ -85,8 +85,9 @@ pipeline {
             --query "Stacks[0].Outputs[?OutputKey=='PublicIP'].OutputValue" \
             --output text)
 
+          echo ""
           echo "🖥️  EC2 Public IP: $IP"
-          echo "🔐 Connect using: ssh -i ~/.ssh/$KEY_NAME.pem ec2-user@$IP"
+          echo "🔐 SSH Access: ssh -i ~/.ssh/$KEY_NAME.pem ec2-user@$IP"
         '''
       }
     }
