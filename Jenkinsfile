@@ -3,7 +3,7 @@ pipeline {
   
   environment {
     STACK_NAME     = 'acit-vpc-stack'
-    TEMPLATE_FILE  = 'acit-vpc.yaml'
+    TEMPLATE_FILE  = 'acit-vpc-one.yaml'
     REGION         = 'us-east-1'
     ENV_NAME       = 'acit-vpc-two'
     VPC_CIDR       = '10.226.232.0/23'
