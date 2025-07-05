@@ -14,7 +14,7 @@ pipeline {
     APP1_CIDR           = '10.226.233.0/25'
     APP2_CIDR           = '10.226.233.128/25'
     INSTANCE_TYPE       = 't2.micro'
-    KEY_NAME            = 'ec2-user'       // Replace with your EC2 key pair
+    KEY_NAME            = 'us-east-1-key'       // Replace with your EC2 key pair
     RESTRICTED_IP       = '100.16.251.45/32'
   }
 
