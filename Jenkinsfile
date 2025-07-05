@@ -7,7 +7,7 @@ pipeline {
     REGION         = 'us-east-1'
     ENV_NAME       = 'acit-vpc-two'
     VPC_CIDR       = '10.226.232.0/23'
-    KEY_NAME       = 'your-keypair-name'       // Replace with your EC2 key pair name
+    KEY_NAME       = 'ec2-user'       // 🔑 Replace with your EC2 key pair
     RESTRICTED_IP  = '100.16.251.45/32'
 
     // Subnet CIDRs
@@ -23,31 +23,30 @@ pipeline {
   }
 
   stages {
-    stage('Setup CFN Lint') {
+
+    stage('Install cfn-lint via virtualenv') {
       steps {
-        echo '⚙️ Setting up cfn-lint via virtual environment...'
+        echo '⚙️ Setting up virtual environment for cfn-lint...'
         sh '''
           python3 -m venv .venv
-          . .venv/bin/activate
-          pip install --upgrade pip
-          pip install cfn-lint
+          . .venv/bin/activate && pip install --upgrade pip && pip install cfn-lint
         '''
       }
     }
 
-    stage('Lint Template') {
+    stage('Lint CloudFormation Template') {
       steps {
-        echo '🔍 Linting CloudFormation template...'
+        echo '🔍 Running cfn-lint...'
         sh '''
           . .venv/bin/activate
-          .venv/bin/cfn-lint $TEMPLATE_FILE
+          .venv/bin/cfn-lint "$TEMPLATE_FILE"
         '''
       }
     }
 
-    stage('Deploy Stack') {
+    stage('Deploy CloudFormation Stack') {
       steps {
-        echo '🚀 Deploying ACIT VPC CloudFormation stack...'
+        echo '🚀 Deploying ACIT VPC stack via AWS CLI...'
         sh """
           aws cloudformation deploy \
             --stack-name $STACK_NAME \
@@ -67,19 +66,19 @@ pipeline {
       }
     }
 
-    stage('Fetch Public IP') {
+    stage('Show EC2 Public IP') {
       steps {
-        echo '📡 Retrieving EC2 public IP from stack output...'
+        echo '📡 Fetching EC2 public IP from stack outputs...'
         sh """
-          IP=\$(aws cloudformation describe-stacks \\
-            --region $REGION \\
-            --stack-name $STACK_NAME \\
-            --query "Stacks[0].Outputs[?OutputKey=='PublicIP'].OutputValue" \\
+          IP=$(aws cloudformation describe-stacks \
+            --region $REGION \
+            --stack-name $STACK_NAME \
+            --query "Stacks[0].Outputs[?OutputKey=='PublicIP'].OutputValue" \
             --output text)
 
           echo ""
-          echo "🖥️  EC2 Public IP: \$IP"
-          echo "🔐 Connect using: ssh -i ~/.ssh/$KEY_NAME.pem ec2-user@\$IP"
+          echo "🖥️  EC2 Public IP: $IP"
+          echo "🔐 SSH Access: ssh -i ~/.ssh/$KEY_NAME.pem ec2-user@$IP"
         """
       }
     }
@@ -87,14 +86,14 @@ pipeline {
 
   post {
     always {
-      echo '🧼 Cleaning up virtual environment...'
+      echo '🧹 Cleaning up virtual environment...'
       sh 'rm -rf .venv'
     }
     success {
-      echo '✅ ACIT VPC Stack deployed successfully!'
+      echo '✅ Deployment completed successfully!'
     }
     failure {
-      echo '❌ Deployment failed. Please check the logs above.'
+      echo '❌ Deployment failed. Check error messages above.'
     }
   }
 }
