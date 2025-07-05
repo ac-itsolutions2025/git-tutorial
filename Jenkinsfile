@@ -23,11 +23,25 @@ pipeline {
   }
 
   stages {
+    stage('Setup CFN Lint') {
+      steps {
+        echo '⚙️ Setting up cfn-lint via virtual environment...'
+        sh '''
+          python3 -m venv .venv
+          . .venv/bin/activate
+          pip install --upgrade pip
+          pip install cfn-lint
+        '''
+      }
+    }
 
     stage('Lint Template') {
       steps {
         echo '🔍 Linting CloudFormation template...'
-        sh 'cfn-lint $TEMPLATE_FILE'
+        sh '''
+          . .venv/bin/activate
+          .venv/bin/cfn-lint $TEMPLATE_FILE
+        '''
       }
     }
 
@@ -72,6 +86,10 @@ pipeline {
   }
 
   post {
+    always {
+      echo '🧼 Cleaning up virtual environment...'
+      sh 'rm -rf .venv'
+    }
     success {
       echo '✅ ACIT VPC Stack deployed successfully!'
     }
